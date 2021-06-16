@@ -43,9 +43,9 @@ def augment(img, obj, projection, template, color=False, scale = 50):
     img = np.ascontiguousarray(img, dtype=np.uint8)
 
     #blacking out the aruco marker
-    a = np.array([[0,0,0], [w, 0, 0],  [w,h,0],  [0, h, 0]], np.float64 )
-    imgpts = np.int32(cv2.perspectiveTransform(a.reshape(-1, 1, 3), projection))
-    cv2.fillConvexPoly(img, imgpts, (0,0,0))
+    # a = np.array([[0,0,0], [w, 0, 0],  [w,h,0],  [0, h, 0]], np.float64 )
+    # imgpts = np.int32(cv2.perspectiveTransform(a.reshape(-1, 1, 3), projection))
+    # cv2.fillConvexPoly(img, imgpts, (0,0,0))
 
     #projecting the faces to pixel coords and then drawing
     for face in obj.faces:
