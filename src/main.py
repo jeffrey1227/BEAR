@@ -15,10 +15,12 @@ K = np.array([[982.16820326, 0., 534.53760602],
 
 
 object_dict = {'fox': ['../3d_objects/fox/fox.obj', '../3d_objects/fox/texture.png'],
-               'basketball': ['../3d_objects/basketball/basketball.obj', None],
+               'basketball-wilson': ['../3d_objects/basketball-wilson/basketball-wilson.obj', '../3d_objects/basketball-wilson/basketball-wilson.jpg'],
+               'basketball': ['../3d_objects/basketball/basketball.obj', '../3d_objects/basketball/basketball.jpg'],
+               'basketball-molten': ['../3d_objects/basketball-molten/molten.obj', '../3d_objects/basketball-molten/molten.jpg'],
                'board': ['../3d_objects/board/board.obj', '../3d_objects/board/board.jpg']}
 
-obj = ThreeDimObject(object_dict['board'][0], object_dict['board'][1])
+obj = ThreeDimObject(object_dict['basketball-wilson'][0], object_dict['basketball-wilson'][1])
 
 def main():
     cap = cv2.VideoCapture(0)

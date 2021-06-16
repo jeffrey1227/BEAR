@@ -34,7 +34,7 @@ def get_extended_RT(A, H):
     R_T[:, 3] = T
     return R_T
 
-def augment(img, obj, projection, template, color=False, scale = 4):
+def augment(img, obj, projection, template, color=False, scale = 50):
     # takes the captureed image, object to augment, and transformation matrix  
     #adjust scale to make the object smaller or bigger, 4 works for the fox
 

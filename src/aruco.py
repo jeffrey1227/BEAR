@@ -8,7 +8,6 @@ def findArucoMarkers(img, draw=True):
     aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
     aruco_param = aruco.DetectorParameters_create()
     bboxs, ids, rejected = aruco.detectMarkers(img_gray, aruco_dict, parameters=aruco_param)
-    print(bboxs)
 
     if draw:
         aruco.drawDetectedMarkers(img, bboxs)
