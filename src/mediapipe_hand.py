@@ -3,20 +3,24 @@ import mediapipe as mp
 import time
 import numpy as np
 from numpy.linalg import inv
+# from sympy import *
 import copy
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
 
 
-def detectHandPose(image, ball):
+def detectHandPose(image, obj):
 	with mp_hands.Hands(
-	min_detection_confidence=0.5,
-	min_tracking_confidence=0.5) as hands:
+	min_detection_confidence=0.70,
+	min_tracking_confidence=0.70) as hands:
 
 		K = np.array([[982.16820326, 0., 534.53760602],
                 [0., 984.53022526, 354.19493125],
                 [0., 0., 1.]])
+
+		vertices = obj.vertices
+		color=True
 
 		# Flip the image horizontally for a later selfie-view display, and convert
 		# the BGR image to RGB.
@@ -29,18 +33,22 @@ def detectHandPose(image, ball):
 		# Draw the hand annotations on the image.
 		image.flags.writeable = True
 		image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+
+		image = np.ascontiguousarray(image, dtype=np.uint8)
+
 		if results.multi_hand_landmarks:
 			# print(results.multi_hand_landmarks)
 			# print('================================================================')
 			for hand_landmarks in results.multi_hand_landmarks:
 				mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 				# print firger tip position
-				print(f'WRIST\n{hand_landmarks.landmark[0]}')
-				print(f'THUMB_TIP\n{hand_landmarks.landmark[4]}')
-				print(f'INDEX_FINGER_TIP\n{hand_landmarks.landmark[8]}')
-				print(f'MIDDLE_FINGER_TIP\n{hand_landmarks.landmark[12]}')
-				print(f'RING_FINGER_TIP\n{hand_landmarks.landmark[16]}')
-				print(f'PINKY_TIP\n{hand_landmarks.landmark[20]}')
+				# print(f'WRIST\n{hand_landmarks.landmark[0]}')
+				# print(f'THUMB_TIP\n{hand_landmarks.landmark[4]}')
+				# print(f'INDEX_FINGER_TIP\n{hand_landmarks.landmark[8]}')
+				# print(f'MIDDLE_FINGER_TIP\n{hand_landmarks.landmark[12]}')
+				# print(f'RING_FINGER_TIP\n{hand_landmarks.landmark[16]}')
+				# print(f'PINKY_TIP\n{hand_landmarks.landmark[20]}')
 				x_rel = 1280
 				y_rel = 720
 				xn = hand_landmarks.landmark[5].x 
@@ -62,12 +70,12 @@ def detectHandPose(image, ball):
 				real_hand = (zm + z_root) * scale * real_hand
 				real_hand = np.dot(inv(K), real_hand)
 
-				print(f'Real Zoot\n{real_hand}')
-				image_ball = copy.deepcopy(ball)
+				# print(f'Real Zoot\n{real_hand}')
+				# image_ball = copy.deepcopy(ball)
 				
 
 				points = []
-				for idx in ([0, 4, 8, 12, 20]):
+				for idx in [0, 4, 8, 12, 16, 20]:
 					xn = hand_landmarks.landmark[idx].x
 					yn = hand_landmarks.landmark[idx].y
 					zn = hand_landmarks.landmark[idx].z
@@ -97,9 +105,33 @@ def detectHandPose(image, ball):
 								_min_dis = abs(_sum)
 
 				
-				image_ball[0, :] += solved_value[0]
-				image_ball[1, :] += solved_value[1]
-				image_ball[2, :] += solved_value[2]
+				for face in obj.faces:
+					#a face is a list [face_vertices, face_tex_coords, face_col]
+					face_vertices = face[0]
+					points = np.array([vertices[vertex - 1] for vertex in face_vertices]) #-1 because of the shifted numbering
+					points = R * points
+					points = np.array([[p[2] + solved_value[0], p[0] + solved_value[1], p[1] + solved_value[2]] for p in points]) #shifted to centre 
+
+					points = np.dot(K, points.T)
+					dst = points / points[2, :]
+
+					dst = dst.T
+					dst = dst[:, :2]
+					dst = dst.reshape(-1, 1, 2)
+					# print(dst.shape)
+
+					# dst = cv2.perspectiveTransform(points.reshape(-1, 1, 3), projection)#transforming to pixel coords
+					imgpts = np.int32(dst)
+					if color is False:
+						cv2.fillConvexPoly(image, imgpts, (50, 50, 50))
+					else:
+						cv2.fillConvexPoly(image, imgpts, face[-1])
+
+
+
+				# image_ball[0, :] += solved_value[0]
+				# image_ball[1, :] += solved_value[1]
+				# image_ball[2, :] += solved_value[2]
 
 				# # x = Symbol('x')
 				# # y =  Symbol('y')
@@ -112,20 +144,20 @@ def detectHandPose(image, ball):
 				solved_value = solved_value / solved_value[2][0]
 				# print(f'Scale\n{solved_value}')
 
-				for x in range(-5, 5):
-					for y in range(-5, 5):
-						try:
-							image[int(solved_value[1])+x, int(solved_value[0])+y] = 0
-						except:
-							continue
+				# for x in range(-5, 5):
+				# 	for y in range(-5, 5):
+				# 		try:
+				# 			image[int(solved_value[1])+x, int(solved_value[0])+y] = 0
+				# 		except:
+				# 			continue
 
-				image_ball = np.dot(K, image_ball)
-				image_ball = image_ball / image_ball[2][0]
-				for i in range(image_ball.shape[1]):
-					try:
-						image[int(image_ball[1][i]), int(image_ball[0][i])] = 0
-					except:
-						continue
+				# image_ball = np.dot(K, image_ball)
+				# image_ball = image_ball / image_ball[2][0]
+				# for i in range(image_ball.shape[1]):
+				# 	try:
+				# 		image[int(image_ball[1][i]), int(image_ball[0][i])] = 0
+				# 	except:
+				# 		continue
 
 
 		return image, results.multi_hand_landmarks	

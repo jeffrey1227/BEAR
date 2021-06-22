@@ -46,7 +46,7 @@ def augment(img, obj, projection, template, color=False, scale = 50):
     # a = np.array([[0,0,0], [w, 0, 0],  [w,h,0],  [0, h, 0]], np.float64 )
     # imgpts = np.int32(cv2.perspectiveTransform(a.reshape(-1, 1, 3), projection))
     # cv2.fillConvexPoly(img, imgpts, (0,0,0))
-
+    # dst_array = []
     #projecting the faces to pixel coords and then drawing
     for face in obj.faces:
         #a face is a list [face_vertices, face_tex_coords, face_col]
@@ -55,11 +55,24 @@ def augment(img, obj, projection, template, color=False, scale = 50):
         points = scale*points
         points = np.array([[p[2] + w/2, p[0] + h/2, p[1]] for p in points]) #shifted to centre 
         dst = cv2.perspectiveTransform(points.reshape(-1, 1, 3), projection)#transforming to pixel coords
+
         imgpts = np.int32(dst)
+        dst_array.append(imgpts)
+
         if color is False:
             cv2.fillConvexPoly(img, imgpts, (50, 50, 50))
         else:
             cv2.fillConvexPoly(img, imgpts, face[-1])
+    # dst_array = np.asarray(dst_array)
+    # print(dst_array.shape)
+    # np.save('dst_array.npy', dst_array)
+            
+    return img
+
+def augment_v2(img, obj, dst_array):
+
+    for e, face in enumerate(obj.faces):
+        cv2.fillConvexPoly(img, dst_array[e], face[-1])
             
     return img
 
