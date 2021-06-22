@@ -46,14 +46,14 @@ object_dict = {'fox': ['../3d_objects/fox/fox.obj', '../3d_objects/fox/texture.p
                'basketball': ['../3d_objects/basketball/basketball.obj', '../3d_objects/basketball/basketball.jpg'],
                'basketball-molten': ['../3d_objects/basketball-molten/molten.obj', '../3d_objects/basketball-molten/molten.jpg'],
                'board2': ['../3d_objects/board/board2.obj', '../3d_objects/board/board.jpg'],
-               'hoop6': ['../3d_objects/board/hoop6_reverse.obj', '../3d_objects/board/hoop6.png']}
+               'hoop': ['../3d_objects/board/hoop4_reverse.obj', '../3d_objects/board/board.jpg']}
 
-obj_name = 'hoop6'
+obj_name = 'hoop'
 
 obj = ThreeDimObject(object_dict[obj_name][0], object_dict[obj_name][1])
 
 def main():
-    dst_array = np.load('dst_array.npy')
+    dst_array = np.load('dst_array_full_hoop.npy')
     cap = cv2.VideoCapture(0)
     while cap.isOpened():
         start_time = time.time()
@@ -64,24 +64,21 @@ def main():
         
         
         # dst_pts, ids = findArucoMarkers(image)
-        # print(dst_pts)
+
         # dst_pts = np.array([[[510., 180.],
         # [760., 180.],
         # [740., 400.],
         # [490., 400.]]])
 
         # ids = True
-        
-        # if there is something, find homography
         # if ids:
-        #     # Calculate homography
         #     marker = cv2.imread('../markers/marker.png')
         #     marker = cv2.cvtColor(marker, cv2.COLOR_BGR2GRAY)
         #     H = calHomography(marker, dst_pts)
 
         #     R_T = get_extended_RT(K, H)
         #     transformation = K.dot(R_T) 
-            
+        # image = augment(image, obj, transformation, marker, True)
         image = augment_v2(image, obj, dst_array)
             # image = np.flip(augment(image, obj, transformation, marker, True), axis = 1)
 
