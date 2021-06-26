@@ -9,4 +9,5 @@
 
 
 
-See demo video [here](https://drive.google.com/file/d/1WukbbCArZPf4oBcswMDyZRPqQv3nMbdz/view?usp=sharing)!
+**See demo video [here](https://drive.google.com/file/d/1WukbbCArZPf4oBcswMDyZRPqQv3nMbdz/view?usp=sharing) and slides [here](https://docs.google.com/presentation/d/1mpYlLV4sO4_4FU2N52p17GadXN28YNB9rH8DJHv4uko/edit#slide=id.p)!***
+
