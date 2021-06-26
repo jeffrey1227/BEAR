@@ -23,29 +23,35 @@ def main():
     # ball = np.zeros((3, len(ball_points)))
     # for i in range(len(ball_points)):
     #     ball[:, i] = (np.array(ball_points[i]))
-    object_dict = {'fox': ['../3d_objects/fox/fox.obj', '../3d_objects/fox/texture.png'],
+    object_dict = {
                'basketball-wilson': ['../3d_objects/basketball-wilson/basketball-wilson.obj', '../3d_objects/basketball-wilson/basketball-wilson.jpg'],
                'basketball': ['../3d_objects/basketball/basketball.obj', '../3d_objects/basketball/basketball.jpg'],
                'basketball-molten': ['../3d_objects/basketball-molten/molten.obj', '../3d_objects/basketball-molten/molten.jpg'],
-               'board': ['../3d_objects/board/board.obj', '../3d_objects/board/board.jpg']}
+               'hoop': ['../3d_objects/board/hoop6.obj', '../3d_objects/board/board.jpg']}
 
     obj = ThreeDimObject(object_dict['basketball-wilson'][0], object_dict['basketball-wilson'][1])
 
 
+    obj_name = 'hoop'
 
+    obj_hoop = ThreeDimObject(object_dict[obj_name][0], object_dict[obj_name][1])
 
+    dst_array = np.load('dst_array_full_hoop.npy')
     cap = cv2.VideoCapture(0)
+    shooted = False
+    solved_value = [0, 0, 0]
+    t = 0
     while cap.isOpened():
         start_time = time.time()
         success, image = cap.read()
         if not success:
             continue
         
-        
+        # image = augment_v2(image, obj_hoop, dst_array)
         # bboxs, ids = findArucoMarkers(image)
-        image, multi_hand_landmarks = detectHandPose(image, obj)
+        image, multi_hand_landmarks, shooted, solved_value, t = detectHandPose(image, obj, shooted, solved_value, t)
         # use landmarks to put ball on hand
-        
+        image = augment_v2(image, obj_hoop, dst_array)
         
         # Calculate fps
         end_time = time.time()

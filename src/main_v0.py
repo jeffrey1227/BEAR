@@ -46,7 +46,7 @@ object_dict = {'fox': ['../3d_objects/fox/fox.obj', '../3d_objects/fox/texture.p
                'basketball': ['../3d_objects/basketball/basketball.obj', '../3d_objects/basketball/basketball.jpg'],
                'basketball-molten': ['../3d_objects/basketball-molten/molten.obj', '../3d_objects/basketball-molten/molten.jpg'],
                'board2': ['../3d_objects/board/board2.obj', '../3d_objects/board/board.jpg'],
-               'hoop': ['../3d_objects/board/hoop4_reverse.obj', '../3d_objects/board/board.jpg']}
+               'hoop': ['../3d_objects/board/hoop6.obj', '../3d_objects/board/board.jpg']}
 
 obj_name = 'hoop'
 
@@ -65,21 +65,21 @@ def main():
         
         # dst_pts, ids = findArucoMarkers(image)
 
-        # dst_pts = np.array([[[510., 180.],
-        # [760., 180.],
-        # [740., 400.],
-        # [490., 400.]]])
+        dst_pts = np.array([[[490., 180.],
+        [790., 180.],
+        [770., 450.],
+        [510., 450.]]])
 
-        # ids = True
-        # if ids:
-        #     marker = cv2.imread('../markers/marker.png')
-        #     marker = cv2.cvtColor(marker, cv2.COLOR_BGR2GRAY)
-        #     H = calHomography(marker, dst_pts)
+        ids = True
+        if ids:
+            marker = cv2.imread('../markers/marker.png')
+            marker = cv2.cvtColor(marker, cv2.COLOR_BGR2GRAY)
+            H = calHomography(marker, dst_pts)
 
-        #     R_T = get_extended_RT(K, H)
-        #     transformation = K.dot(R_T) 
-        # image = augment(image, obj, transformation, marker, True)
-        image = augment_v2(image, obj, dst_array)
+            R_T = get_extended_RT(K, H)
+            transformation = K.dot(R_T) 
+        image = augment(image, obj, transformation, marker, True)
+        # image = augment_v2(image, obj, dst_array)
             # image = np.flip(augment(image, obj, transformation, marker, True), axis = 1)
 
         # image, multi_hand_landmarks = detectHandPose(image)
