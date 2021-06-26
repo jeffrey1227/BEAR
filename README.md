@@ -1,6 +1,6 @@
 # BEAR: Basketball Experience using Augmented Reality
 
-## How to run this repo?
+### How to run this repo?
 - Install packages in ``requirements.txt``
 - Calibrate your camera
   - Record a video including the chessboard file located in ``markers/camera-calibration-checker-board_9x7.pdf``
