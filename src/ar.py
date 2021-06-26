@@ -34,7 +34,7 @@ def get_extended_RT(A, H):
     R_T[:, 3] = T
     return R_T
 
-def augment(img, obj, projection, template, color=False, scale = 50):
+def save_hoop(img, obj, projection, template, color=False, scale = 50):
     # takes the captureed image, object to augment, and transformation matrix  
     #adjust scale to make the object smaller or bigger, 4 works for the fox
 
@@ -42,10 +42,6 @@ def augment(img, obj, projection, template, color=False, scale = 50):
     vertices = obj.vertices
     img = np.ascontiguousarray(img, dtype=np.uint8)
 
-    #blacking out the aruco marker
-    # a = np.array([[0,0,0], [w, 0, 0],  [w,h,0],  [0, h, 0]], np.float64 )
-    # imgpts = np.int32(cv2.perspectiveTransform(a.reshape(-1, 1, 3), projection))
-    # cv2.fillConvexPoly(img, imgpts, (0,0,0))
     dst_array = []
     #projecting the faces to pixel coords and then drawing
     for face in obj.faces:
@@ -63,13 +59,14 @@ def augment(img, obj, projection, template, color=False, scale = 50):
             cv2.fillConvexPoly(img, imgpts, (50, 50, 50))
         else:
             cv2.fillConvexPoly(img, imgpts, face[-1])
+    
     dst_array = np.asarray(dst_array)
     print(dst_array.shape)
-    np.save('dst_array_full_hoop.npy', dst_array)
+    np.save('hoop_array.npy', dst_array)
             
-    return img
+    return img, dst_array
 
-def augment_v2(img, obj, dst_array):
+def augment(img, obj, dst_array):
 
     for e, face in enumerate(obj.faces):
         cv2.fillConvexPoly(img, dst_array[e], face[-1])

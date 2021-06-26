@@ -3,22 +3,18 @@ import mediapipe as mp
 import time
 import numpy as np
 from numpy.linalg import inv
-# from sympy import *
 import copy
 
 from numpy.linalg import inv
-from sklearn.metrics.pairwise import cosine_similarity
-from numpy import dot
 from numpy.linalg import norm
-from scipy import interpolate
 import math 
 
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
 
-def sign(a, b):
-	pass
+K = np.load('../calibration/camera_parameters.npy', allow_pickle=True)[0]
+
 
 def trilaterate(points, distances):
 
@@ -51,14 +47,10 @@ def trilaterate(points, distances):
 
 	return pa, pb, True
 
-def detectHandPose(image, obj, shooted, solved_value, t):
+def detectHandPose(image, obj, shot, solved_value, t):
 	with mp_hands.Hands(
 	min_detection_confidence=0.7,max_num_hands = 1,
 	min_tracking_confidence=0.7) as hands:
-
-		K = np.array([[982.16820326, 0., 534.53760602],
-                [0., 984.53022526, 354.19493125],
-                [0., 0., 1.]])
 
 		vertices = obj.vertices
 		color=True
@@ -79,23 +71,18 @@ def detectHandPose(image, obj, shooted, solved_value, t):
 		hoop = np.dot(inv(K), hoop)
 		hoop = hoop * 20
 
-
-
 		image = np.ascontiguousarray(image, dtype=np.uint8)
 
 		if results.multi_hand_landmarks:
-			# print(results.multi_hand_landmarks)
-			# print('================================================================')
 			for hand_landmarks in results.multi_hand_landmarks:
-				if shooted == False:
-					# mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+				if not shot:
 
 
 					if hand_landmarks.landmark[12].y > hand_landmarks.landmark[9].y :
-						print('ball shooted')
-						shooted = True
+						print('ball shot')
+						shot = True
 
-
+					# reconstruct 3D pose from 2.5D representation
 					x_rel = 1280
 					y_rel = 720
 					xn = hand_landmarks.landmark[5].x 
@@ -132,7 +119,8 @@ def detectHandPose(image, obj, shooted, solved_value, t):
 						points.append(real_hand)
 					points = np.array(points)
 
-					
+
+					# search best centroid of ball
 					R = 2
 					dis_range = 5
 					_min_dis = float('inf')
@@ -150,7 +138,7 @@ def detectHandPose(image, obj, shooted, solved_value, t):
 									solved_value[2] = _z
 									_min_dis = abs(_sum)
 
-
+					# render ball in palm
 					for face in obj.faces:
 						#a face is a list [face_vertices, face_tex_coords, face_col]
 						face_vertices = face[0]
@@ -175,39 +163,19 @@ def detectHandPose(image, obj, shooted, solved_value, t):
 					two_d_solved_value = np.array(solved_value).reshape((3, 1))
 					two_d_solved_value = np.dot(K, two_d_solved_value)
 					two_d_solved_value = two_d_solved_value / two_d_solved_value[2][0]
-					# print(f'Scale\n{solved_value}')
+					return image, results.multi_hand_landmarks, shot, solved_value, t
 
-					# for x in range(-5, 5):
-					# 	for y in range(-5, 5):
-					# 		try:
-					# 			image[int(two_d_solved_value[1])+x, int(two_d_solved_value[0])+y] = 0
-					# 		except:
-					# 			continue
-					return image, results.multi_hand_landmarks, shooted, solved_value, t
-
-
-		if shooted == True:
-
+		# ball shot, calculate and render trajectory
+		if shot:
 
 			R = 2
 			npts = 10
 			p1= np.array(solved_value)
-			# p2= hoop[:,0]
-			# p1 = [-2, 5, 84]
 			print('ball starts to fly at', p1)
-			p2 = [2, -3, 20.]
+			p2 = [0, -6, 20.]
 			
-
 			theta = math.pi / 3
 			g = 980
-
-
-			
-			# v0_z_pow = (g * (p2[2] - p1[2]) ** 2 / ((math.tan(theta) * (p2[2] - p1[2]) - (p2[1] - p1[1])) * 2 * math.cos(theta)**2))
-
-			# v0_x_pow = (g * (p2[0] - p1[0]) ** 2 / ((math.tan(theta) * (p2[0] - p1[0]) - (p2[1] - p1[1])) * 2 * math.cos(theta)**2))
-
-			# v0 = (g * ((p2[2] - p1[2]) ** 2 + (p2[0] - p1[0]) ** 2) / ((math.tan(theta) * ((p2[2] - p1[2]) ** 2 + (p2[0] - p1[0]) ** 2)**(1/2) - (p2[1] - p1[1])) * 2 * math.cos(theta)**2)) **(1/2)
 
 			x_trans = p2[0] - p1[0]
 			y_trans = p2[1] - p1[1]
@@ -215,78 +183,22 @@ def detectHandPose(image, obj, shooted, solved_value, t):
 			alpha = (x_trans**2 + z_trans**2)**(1/2)
 
 			v0 = ((alpha * g) / math.sin(2*theta)) ** (1/2)
-			# v0 = (abs(v0_x_pow) + abs(v0_z_pow))**(1/2)
 
 			percet = abs(z_trans) / abs(x_trans)
 			v0_z = - v0 / (math.sqrt(percet ** 2 + 1)) * percet
 			v0_x = (v0**2 - v0_z**2)**(1/2) * np.sign(x_trans)
 
 
-			# print(percet)
-			# print(v0_z_pow)
-			# print(v0_x_pow)
-
 			t_drop = 2 * v0 * math.sin(theta) / g
 			dt = np.linspace(0, t_drop, npts)
 
-
-			# if v0_z < 0:
-			# 	new_z = (v0_z) * math.cos(theta) * dt[t] + p1[2]
-			# else:
 			new_z = v0_z* math.cos(theta) * dt[t] + p1[2]
-
-			# if v0_x < 0:
-			# 	new_x = (v0_x) * math.cos(theta) * dt[t] + p1[0]
-			# else:
-			new_x = v0_x * math.cos(theta) * dt[t] + p1[0]
-			
-			
+			new_x = v0_x * math.cos(theta) * dt[t] + p1[0]		
 			new_y =  -(v0 * math.sin(theta) * dt[t] - 0.5 * g * (dt[t] **2)) + p1[1]
 			
 			shape3 = [int(new_x), int(new_y), int(new_z)]
 			
-
-			# R = 2
-			# npts = 20
-			# p1= np.array(solved_value)
-			# p2= hoop[:,0]
-
-			# p2 = [ 2, -2.97212731, 20.        ]
-			# p1 =  [2,   5,  84]
-
-			# theta = math.pi / 3
-			# g = 980
-			# # y = math.tan(theta) * x - g * x * x / (2 * (V0) ** 2 * math.cos(theta) ** 2)
-			# v0 = (g * (p2[2] - p1[2]) ** 2 / ((math.tan(theta) - (p2[2] - p1[2]) - (p1[1] - p2[1])) * 2 * math.cos(theta))) ** (1/2)
-			# t_drop = 2 * v0 * math.sin(theta) / g
-
-			# dt = np.linspace(0, t_drop, npts)
-	
-			# new_z = -v0 * math.cos(theta) * dt[t] + p1[2]
-			# new_y =  -(v0 * math.sin(theta) * dt[t] - 0.5 * g * (dt[t] **2)) + p1[1]
-			# shape3 = [p1[0], new_y, new_z] 
-
-			# # p1 = np.array([solved_value[2], solved_value[1], solved_value[0]])
-			# # p2 = np.array([hoop[2][0], hoop[1][0], hoop[0][0]])
-
-			# # npts = 20 # number of points to sample
-			# # y=np.array([0,-0.5,-1,-1,-0.5,0]) #describe your shape in 1d like this
-			# # amp=5
-			# # R = 2
-			# # z=np.arange(y.size)
-			# # xnew = np.linspace(z[0],z[-1] , npts) #sample the x coord
-			# # tck = interpolate.splrep(z,y,s=0) 
-			# # adder = interpolate.splev(xnew,tck,der=0)*amp
-			# # adder[0]=adder[-1]=0
-			# # adder=adder.reshape((-1,1))
-
-			# # #get a line between points
-			# # shape3=np.vstack([np.linspace(p1[dim],p2[dim],npts) for dim in range(3)]).T
-
-			# # #raise the z coordinate
-			# # shape3[:,-1]=shape3[:,-1]+adder[:,-1]
-
-	
+			# render
 			for face in obj.faces:
 				#a face is a list [face_vertices, face_tex_coords, face_col]
 				face_vertices = face[0]
@@ -310,10 +222,10 @@ def detectHandPose(image, obj, shooted, solved_value, t):
 			t += 1
 			if t >= npts:
 				t = 0
-				shooted = False
+				shot = False
 
 
-		return image, results.multi_hand_landmarks, shooted, solved_value, t
+		return image, results.multi_hand_landmarks, shot, solved_value, t
 	
 
 def main():
@@ -345,17 +257,8 @@ def main():
 			image.flags.writeable = True
 			image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 			if results.multi_hand_landmarks:
-				# print(results.multi_hand_landmarks)
-				# print('================================================================')
 				for hand_landmarks in results.multi_hand_landmarks:
 					mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-					# print firger tip position
-					print(f'WRIST\n{hand_landmarks.landmark[0]}')
-					print(f'THUMB_TIP\n{hand_landmarks.landmark[4]}')
-					print(f'INDEX_FINGER_TIP\n{hand_landmarks.landmark[8]}')
-					print(f'MIDDLE_FINGER_TIP\n{hand_landmarks.landmark[12]}')
-					print(f'RING_FINGER_TIP\n{hand_landmarks.landmark[16]}')
-					print(f'PINKY_TIP\n{hand_landmarks.landmark[20]}')
 			
 			# Calculate fps
 			end_time = time.time()
@@ -372,38 +275,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
-
-'''
-file_list = ['test_img/img1.jpg', 'test_img/img2.jpg', 'test_img/img3.jpg']
-# For static images:
-with mp_hands.Hands(
-	static_image_mode=True,
-	max_num_hands=2,
-	min_detection_confidence=0.5) as hands:
-	for idx, file in enumerate(file_list):
-		# Read an image, flip it around y-axis for correct handedness output (see
-		# above).
-		image = cv2.flip(cv2.imread(file), 1)
-		# Convert the BGR image to RGB before processing.
-		results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-
-		# Print handedness and draw hand landmarks on the image.
-		print('Handedness:', results.multi_handedness)
-		if not results.multi_hand_landmarks:
-			continue
-		image_height, image_width, _ = image.shape
-		annotated_image = image.copy()
-		for hand_landmarks in results.multi_hand_landmarks:
-			print('hand_landmarks:', hand_landmarks)
-			print(
-				f'Index finger tip coordinates: (',
-				f'{hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x * image_width}, '
-				f'{hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y * image_height})'
-			)
-			mp_drawing.draw_landmarks(
-				annotated_image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-		cv2.imwrite(
-			'test_img/annotated_image' + str(idx+1) + '.png', cv2.flip(annotated_image, 1))
-
-'''

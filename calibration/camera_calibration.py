@@ -2,6 +2,8 @@
 import numpy as np
 import cv2 as cv
 import glob, sys, argparse
+import json
+
 
 class Calibrator:
     def __init__(self, args):
@@ -86,7 +88,7 @@ class Calibrator:
         print(self.K)
         print('Distortion Coefficients')
         print(self.dist)
-        np.save(self.args.output, {'K': self.K, 'dist': self.dist})
+        np.save(self.args.output, np.array([self.K, self.dist]))
 
     def show_result(self, imgs, imgpoints, mtx, dist, rvecs, tvecs):
         try:
