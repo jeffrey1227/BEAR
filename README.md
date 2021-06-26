@@ -6,3 +6,7 @@
   - Record a video including the chessboard file located in ``markers/camera-calibration-checker-board_9x7.pdf``
   - Run ``camera_calibration.py`` in ``calibration/`` and press ``space`` several times to generate images for calibration, which saves intrinsic parameters to ``camera_parameters.npy``
 - You're all set, simply run ``main.py`` under ``src/`` to start!
+
+
+
+See demo video here[https://drive.google.com/file/d/1WukbbCArZPf4oBcswMDyZRPqQv3nMbdz/view?usp=sharing]!
