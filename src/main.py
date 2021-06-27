@@ -26,9 +26,11 @@ def main():
             success, image = cap.read()
             if not success:
                 continue
-            
+
             marker = cv2.imread('../markers/marker.png')
             marker = cv2.cvtColor(marker, cv2.COLOR_BGR2GRAY)
+            # dst_pts depends on the image shape
+            # if ypur image differs from 1280x720, you can modify the numbers
             dst_pts = np.array([[[490., 180.],
                                 [790., 180.],
                                 [770., 450.],

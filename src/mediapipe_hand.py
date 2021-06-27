@@ -54,6 +54,7 @@ def detectHandPose(image, obj, shot, solved_value, t):
 
 		vertices = obj.vertices
 		color=True
+		h, w, _ = image.shape # 720, 1280
 
 		# Flip the image horizontally for a later selfie-view display, and convert
 		# the BGR image to RGB.
@@ -83,8 +84,8 @@ def detectHandPose(image, obj, shot, solved_value, t):
 						shot = True
 
 					# reconstruct 3D pose from 2.5D representation
-					x_rel = 1280
-					y_rel = 720
+					x_rel = w
+					y_rel = h
 					xn = hand_landmarks.landmark[5].x 
 					xm = hand_landmarks.landmark[0].x 
 					yn = hand_landmarks.landmark[5].y 
