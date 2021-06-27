@@ -1,4 +1,6 @@
 .DS_Store
+src/hoop_array.npy
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
