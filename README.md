@@ -1,5 +1,7 @@
 # BEAR: Basketball Experience using Augmented Reality
 
+We developed an **AR basketball system** by which we can play basketball without a basket and a ball. 
+
 ![](https://github.com/jeffrey1227/BEAR/blob/main/README.assets/demo.gif)
 
 ### How to run this repo?
