@@ -1,6 +1,6 @@
 # BEAR: Basketball Experience using Augmented Reality
 
-![](/Users/jeffreychen/Desktop/109-2/3D_DLCV/final/BEAR/README.assets/readme_gif.gif)
+![](https://github.com/jeffrey1227/BEAR/blob/main/README.assets/readme_gif.gif)
 
 ### How to run this repo?
 
