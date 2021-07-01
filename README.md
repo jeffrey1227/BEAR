@@ -3,7 +3,7 @@
 We developed an **AR basketball system** by which we can play basketball without a basket and a ball. 
 
 ![](https://github.com/jeffrey1227/BEAR/blob/main/README.assets/demo.gif)
-<img src="https://github.com/jeffrey1227/BEAR/blob/main/README.assets/demo.gif" width="250" height="250"/>
+<img src="https://github.com/jeffrey1227/BEAR/blob/main/README.assets/demo.gif" width="480" height="270"/>
 
 ### How to run this repo?
 
